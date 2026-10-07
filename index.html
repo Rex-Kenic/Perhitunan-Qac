@@ -1,1 +1,863 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Skrining Pro — Sistem Manajemen Data Lengkap" />
+  <title>Skrining Pro v2.1 | Sistem Manajemen Data</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { inter: ['Inter', 'sans-serif'] },
+          colors: {
+            sidebar: '#161B22',
+            bgmain: '#0D1117',
+            card: '#161B22',
+            cardhover: '#21262D',
+            border: '#30363D',
+            accent: '#1F6FEB',
+            success: '#3FB950',
+            danger: '#F85149',
+            warning: '#D29922',
+            purple: '#A371F7',
+            info: '#58A6FF',
+            muted: '#8B949E'
+          },
+          boxShadow: {
+            card: '0 1px 4px rgba(0,0,0,0.4)',
+            float: '0 8px 24px rgba(0,0,0,0.5)'
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .sidebar-link { @apply flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all duration-200; }
+      .sidebar-link.active { @apply bg-accent/15 text-accent font-medium border-l-2 border-accent; }
+      .sidebar-link.inactive { @apply text-slate-400 hover:bg-white/5 hover:text-slate-200 border-l-2 border-transparent; }
+      .panel { @apply bg-card rounded-xl shadow-card border border-border overflow-hidden; }
+      .panel-head { @apply px-5 py-3.5 border-b border-border flex items-center justify-between flex-wrap gap-2; }
+      .panel-body { @apply p-5; }
+      .btn { @apply px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2; }
+      .btn-primary { @apply bg-accent hover:bg-accent/90 text-white shadow-md; }
+      .btn-success { @apply bg-success/90 hover:bg-success text-white; }
+      .btn-danger { @apply bg-danger/90 hover:bg-danger text-white; }
+      .btn-warning { @apply bg-warning/90 hover:bg-warning text-gray-900; }
+      .btn-secondary { @apply bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10; }
+      .btn-sm { @apply px-2.5 py-1.5 text-xs; }
+      .input-field { @apply w-full px-3.5 py-2.5 rounded-lg border text-sm transition-all; }
+      .input-light { @apply bg-white/95 text-gray-800 border-gray-300 focus:border-accent focus:ring-1 focus:ring-accent; }
+      .input-dark { @apply bg-slate-800/60 text-slate-200 border-slate-600 focus:border-accent focus:ring-1 focus:ring-accent; }
+      .stat-card { @apply rounded-xl p-4 border border-border bg-card shadow-card hover:shadow-md transition-shadow; }
+      .stat-label { @apply text-xs text-muted font-medium uppercase tracking-wider; }
+      .stat-value { @apply text-2xl font-bold tracking-tight; }
+      .page-section { @apply mb-8; }
+      .hidden-section { display: none !important; }
+      .fade-in { animation: fadeIn 0.3s ease-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    }
+  </style>
+</head>
+<body class="font-inter bg-bgmain text-slate-100 min-h-screen">
+  <div class="flex min-h-screen">
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-sidebar border-r border-border flex flex-col fixed h-full z-40">
+      <div class="px-5 py-4 border-b border-border">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
+            <i class="fa-solid fa-chart-line text-accent"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-white">Skrining Pro</h1>
+            <p class="text-xs text-muted">v2.1 · Sistem Lengkap</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 py-5 px-3 space-y-1.5 overflow-y-auto">
+        <p class="px-4 py-1 text-xs text-muted font-semibold uppercase tracking-wider">Menu Utama</p>
+        
+        <a href="#" class="sidebar-link active" data-page="beranda">
+          <i class="fa-solid fa-house w-5 text-center"></i>
+          <span>Beranda</span>
+        </a>
+        <a href="#" class="sidebar-link inactive" data-page="transaksi">
+          <i class="fa-solid fa-file-circle-plus w-5 text-center"></i>
+          <span>Input Transaksi</span>
+        </a>
+        <a href="#" class="sidebar-link inactive" data-page="mingguan">
+          <i class="fa-solid fa-calendar-week w-5 text-center"></i>
+          <span>Data Mingguan</span>
+        </a>
+        <a href="#" class="sidebar-link inactive" data-page="analitik">
+          <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+          <span>Analitik & Grafik</span>
+        </a>
+        <a href="#" class="sidebar-link inactive" data-page="arsip">
+          <i class="fa-solid fa-database w-5 text-center"></i>
+          <span>Arsip Lengkap</span>
+        </a>
+
+        <div class="pt-4 mt-4 border-t border-border">
+          <p class="px-4 py-1 text-xs text-muted font-semibold uppercase tracking-wider">Pengaturan</p>
+          <a href="#" class="sidebar-link inactive" data-page="pengaturan">
+            <i class="fa-solid fa-gear w-5 text-center"></i>
+            <span>Konfigurasi</span>
+          </a>
+          <a href="#" class="sidebar-link inactive" data-page="cadangan">
+            <i class="fa-solid fa-cloud-arrow-down w-5 text-center"></i>
+            <span>Cadangan Data</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="p-4 border-t border-border text-xs text-muted">
+        <p>© 2026 Skrining Pro</p>
+        <p class="mt-1">Versi 2.1.0</p>
+      </div>
+    </aside>
+
+    <!-- KONTEN UTAMA -->
+    <main class="flex-1 ml-64 p-6">
+      <header class="flex justify-between items-center mb-8">
+        <div>
+          <h2 id="pageTitle" class="text-xl font-bold">Beranda</h2>
+          <p id="pageDesc" class="text-sm text-muted mt-1">Ringkasan aktivitas sistem</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <span id="waktuSekarang" class="text-sm text-muted">—</span>
+          <div class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- ====================================== -->
+      <!-- HALAMAN 1: BERANDA -->
+      <!-- ====================================== -->
+      <section id="page-beranda" class="page-section fade-in">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          <div class="stat-card">
+            <p class="stat-label">Total Transaksi</p>
+            <p class="stat-value text-accent mt-1" id="statTotal">0</p>
+            <p class="text-xs text-muted mt-2">Data tersimpan</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Minggu Ini</p>
+            <p class="stat-value text-success mt-1" id="statMinggu">0</p>
+            <p class="text-xs text-muted mt-2">Periode aktif</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Rata-rata DM</p>
+            <p class="stat-value text-warning mt-1" id="statAvgDM">0%</p>
+            <p class="text-xs text-muted mt-2">Keseluruhan</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Total Selisih</p>
+            <p class="stat-value text-purple mt-1" id="statTotalKurang">0</p>
+            <p class="text-xs text-muted mt-2">Akumulasi</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">Aktivitas Terbaru</h3>
+              <a href="#" data-page="arsip" class="text-xs text-accent hover:underline go-page">Lihat Semua →</a>
+            </div>
+            <div class="panel-body">
+              <div id="aktivitasTerbaru" class="space-y-3 text-sm">
+                <p class="text-muted text-center py-4">Belum ada data transaksi.</p>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">Tren Singkat DM</h3>
+            </div>
+            <div class="panel-body">
+              <div class="h-56">
+                <canvas id="miniGrafikDM"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================== -->
+      <!-- HALAMAN 2: INPUT TRANSAKSI -->
+      <!-- ====================================== -->
+      <section id="page-transaksi" class="page-section hidden-section fade-in">
+        <form id="formTransaksi" class="space-y-6 max-w-5xl">
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">Informasi Transaksi</h3>
+              <span id="kodeTrx" class="text-sm font-mono text-accent">TRX-20261007-0001</span>
+            </div>
+            <div class="panel-body grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="stat-label mb-1.5 block">Tanggal</label>
+                <input id="tanggal" type="date" class="input-field input-light" required />
+              </div>
+              <div>
+                <label class="stat-label mb-1.5 block">Nama Material</label>
+                <input id="material" type="text" placeholder="Contoh: Pasir Besi" class="input-field input-light" />
+              </div>
+              <div>
+                <label class="stat-label mb-1.5 block">Periode Mingguan</label>
+                <select id="periodeMinggu" class="input-field input-light"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">Perhitungan DM</h3>
+              <span id="dmStatus" class="text-xs px-2 py-1 rounded-full bg-success/10 text-success font-medium">Siap</span>
+            </div>
+            <div class="panel-body grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="stat-label mb-1.5 block">Nilai DM 1</label>
+                <input id="dm1" type="number" step="0.01" placeholder="0.00" class="input-field input-light" />
+              </div>
+              <div>
+                <label class="stat-label mb-1.5 block">Nilai DM 2</label>
+                <input id="dm2" type="number" step="0.01" placeholder="0.00" class="input-field input-light" />
+              </div>
+              <div>
+                <label class="stat-label mb-1.5 block">Hasil Persentase</label>
+                <input id="dmPersen" type="text" readonly class="input-field input-dark font-semibold" placeholder="0.00 %" />
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">Data Skrining Test</h3>
+              <button type="button" id="toggleEditPermanen" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Nilai Standar
+              </button>
+            </div>
+            <div class="panel-body overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-muted border-b border-border">
+                    <th class="py-3 px-3 font-semibold">Kategori</th>
+                    <th class="py-3 px-3 text-center font-semibold">Nilai Input</th>
+                    <th class="py-3 px-3 text-center font-semibold">Nilai Standar</th>
+                    <th class="py-3 px-3 text-center font-semibold">Selisih</th>
+                    <th class="py-3 px-3 text-center font-semibold">Persentase</th>
+                  </tr>
+                </thead>
+                <tbody id="skriningBody">
+                  <tr data-kategori="TS" class="border-b border-border/40">
+                    <td class="py-3 px-3 font-medium">TS</td>
+                    <td><input type="number" class="input-field input-light val-input text-center py-1.5" value="427" /></td>
+                    <td><input type="number" class="input-field input-dark val-permanen text-center py-1.5" value="422" readonly /></td>
+                    <td class="py-3 px-3 text-center font-semibold hasil-selisih text-success">+5</td>
+                    <td class="py-3 px-3 text-center font-semibold hasil-persen">—</td>
+                  </tr>
+                  <tr data-kategori="MS" class="border-b border-border/40">
+                    <td class="py-3 px-3 font-medium">MS</td>
+                    <td><input type="number" class="input-field input-light val-input text-center py-1.5" value="442" /></td>
+                    <td><input type="number" class="input-field input-dark val-permanen text-center py-1.5" value="424" readonly /></td>
+                    <td class="py-3 px-3 text-center font-semibold hasil-selisih text-success">+18</td>
+                    <td class="py-3 px-3 text-center font-semibold hasil-persen">—</td>
+                  </tr>
+                  <tr data-kategori="BS" class="border-b border-border/40">
+                    <td class="py-3 px-3 font-medium">BS</td>
+                    <td><input type="number" class="input-field input-light val-input text-center py-1.5" value="473" /></td>
+                    <td><input type="number" class="input-field input-dark val-permanen text-center py-1.5" value="444" readonly /></td>
+                    <td class="py-3 px-3 text-center font-semibold hasil-selisih text-success">+29</td>
+                    <td class="py-3 px-3 text-center font-semibold hasil-persen">—</td>
+                  </tr>
+                  <tr data-kategori="PS" class="border-b border-border/40">
+                    <td class="py-3 px-3 font-medium">PS</td>
+                    <td><input type="number" class="input-field input-light val-input text-center py-1.5" value="520" /></td>
+                    <td><input type="number" class="input-field input-dark val-permanen text-center py-1.5" value="422" readonly /></td>
+                    <td class="py-3 px-3 text-center font-semibold hasil-selisih text-success">+98</td>
+                    <td class="py-3 px-3 text-center font-semibold hasil-persen">—</td>
+                  </tr>
+                  <tr class="bg-cardhover/60 font-bold">
+                    <td class="py-3 px-3">TOTAL</td>
+                    <td class="py-3 px-3 text-center" colspan="2">—</td>
+                    <td class="py-3 px-3 text-center text-warning" id="totalSelisih">150</td>
+                    <td class="py-3 px-3 text-center">100%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-save"></i> Simpan Transaksi
+            </button>
+            <button type="button" id="btnReset" class="btn btn-secondary">
+              <i class="fa-solid fa-rotate"></i> Reset Form
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ====================================== -->
+      <!-- HALAMAN 3: DATA MINGGUAN -->
+      <!-- ====================================== -->
+      <section id="page-mingguan" class="page-section hidden-section fade-in">
+        <div class="panel">
+          <div class="panel-head">
+            <h3 class="font-semibold">📅 Rekapitulasi Data Mingguan</h3>
+            <select id="filterMingguan" class="input-field input-light py-1.5 w-auto text-sm">
+              <option value="semua">— Semua Periode —</option>
+            </select>
+          </div>
+          <div class="panel-body overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-muted border-b border-border">
+                  <th class="py-3 px-3 font-semibold">Periode</th>
+                  <th class="py-3 px-3 text-center font-semibold">Jumlah Data</th>
+                  <th class="py-3 px-3 text-center font-semibold">Rata-rata DM</th>
+                  <th class="py-3 px-3 text-center font-semibold">TS Rata-rata</th>
+                  <th class="py-3 px-3 text-center font-semibold">MS Rata-rata</th>
+                  <th class="py-3 px-3 text-center font-semibold">BS Rata-rata</th>
+                  <th class="py-3 px-3 text-center font-semibold">PS Rata-rata</th>
+                  <th class="py-3 px-3 text-center font-semibold">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="mingguanBody">
+                <tr><td colspan="8" class="py-8 text-center text-muted">Belum ada data mingguan.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================== -->
+      <!-- HALAMAN 4: ANALITIK & GRAFIK -->
+      <!-- ====================================== -->
+      <section id="page-analitik" class="page-section hidden-section fade-in">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">📊 Tren Persentase DM</h3>
+            </div>
+            <div class="panel-body">
+              <div class="h-64">
+                <canvas id="grafikDM"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">📊 Distribusi Skrining</h3>
+            </div>
+            <div class="panel-body">
+              <div class="h-64">
+                <canvas id="grafikSkrining"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="panel lg:col-span-2">
+            <div class="panel-head">
+              <h3 class="font-semibold">📉 Total Selisih per Periode</h3>
+            </div>
+            <div class="panel-body">
+              <div class="h-64">
+                <canvas id="grafikTotalKurang"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================== -->
+      <!-- HALAMAN 5: ARSIP LENGKAP -->
+      <!-- ====================================== -->
+      <section id="page-arsip" class="page-section hidden-section fade-in">
+        <div class="panel">
+          <div class="panel-head">
+            <h3 class="font-semibold">🗄️ Arsip Lengkap Semua Transaksi</h3>
+            <div class="flex gap-2 flex-wrap">
+              <input id="searchInput" type="text" placeholder="Cari kode, material, periode..." class="input-field input-light py-1.5 text-sm max-w-xs" />
+              <button id="btnExport" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-file-csv"></i> Export CSV
+              </button>
+              <button id="btnHapusSemua" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-trash"></i> Hapus Semua
+              </button>
+            </div>
+          </div>
+          <div class="panel-body overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-muted border-b border-border">
+                  <th class="py-3 px-3 font-semibold">Kode</th>
+                  <th class="py-3 px-3 font-semibold">Tanggal</th>
+                  <th class="py-3 px-3 font-semibold">Periode</th>
+                  <th class="py-3 px-3 font-semibold">Material</th>
+                  <th class="py-3 px-3 text-center font-semibold">DM %</th>
+                  <th class="py-3 px-3 text-center font-semibold">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="dbBody">
+                <tr><td colspan="6" class="py-8 text-center text-muted">Belum ada data tersimpan.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================== -->
+      <!-- HALAMAN 6: PENGATURAN -->
+      <!-- ====================================== -->
+      <section id="page-pengaturan" class="page-section hidden-section fade-in">
+        <div class="max-w-2xl space-y-5">
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">Nilai Standar Skrining</h3>
+            </div>
+            <div class="panel-body space-y-4">
+              <p class="text-sm text-muted">Ubah nilai standar melalui halaman <strong>Input Transaksi</strong> → tombol <strong>Edit Nilai Standar</strong>. Nilai tersimpan otomatis.</p>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="p-3 bg-cardhover rounded-lg">
+                  <span class="text-muted">TS Standar</span>
+                  <p class="font-bold text-accent mt-1" id="standarTS">422</p>
+                </div>
+                <div class="p-3 bg-cardhover rounded-lg">
+                  <span class="text-muted">MS Standar</span>
+                  <p class="font-bold text-accent mt-1" id="standarMS">424</p>
+                </div>
+                <div class="p-3 bg-cardhover rounded-lg">
+                  <span class="text-muted">BS Standar</span>
+                  <p class="font-bold text-accent mt-1" id="standarBS">444</p>
+                </div>
+                <div class="p-3 bg-cardhover rounded-lg">
+                  <span class="text-muted">PS Standar</span>
+                  <p class="font-bold text-accent mt-1" id="standarPS">422</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">Tentang Sistem</h3>
+            </div>
+            <div class="panel-body space-y-2 text-sm">
+              <p><strong>Skrining Pro v2.1.0</strong></p>
+              <p class="text-muted">Data tersimpan di penyimpanan browser lokal. Lakukan pencadangan berkala ke file CSV.</p>
+              <p class="text-muted">Terakhir diperbarui: 7 Oktober 2026</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================== -->
+      <!-- HALAMAN 7: CADANGAN DATA (BARU) -->
+      <!-- ====================================== -->
+      <section id="page-cadangan" class="page-section hidden-section fade-in">
+        <div class="max-w-2xl space-y-5">
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">📤 Ekspor Data</h3>
+            </div>
+            <div class="panel-body space-y-3 text-sm">
+              <p class="text-muted">Unduh seluruh data ke file CSV untuk cadangan atau dibuka di Excel.</p>
+              <button id="btnExportFull" class="btn btn-success">
+                <i class="fa-solid fa-file-csv"></i> Unduh Semua Data (.csv)
+              </button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">📥 Impor Data</h3>
+            </div>
+            <div class="panel-body space-y-3 text-sm">
+              <p class="text-warning">⚠️ Data yang ada akan ditimpa atau digabung. Pilih mode di bawah:</p>
+              <div class="flex gap-3 mb-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="imporMode" value="gabung" checked class="accent-accent" /> Gabungkan
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="imporMode" value="ganti" class="accent-accent" /> Ganti Semua
+                </label>
+              </div>
+              <input type="file" id="fileImpor" accept=".json,.csv" class="input-field input-light text-sm" />
+              <button id="btnImpor" class="btn btn-primary mt-2">
+                <i class="fa-solid fa-upload"></i> Mulai Impor
+              </button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h3 class="font-semibold">💾 Cadangan Lengkap (.json)</h3>
+            </div>
+            <div class="panel-body space-y-3 text-sm">
+              <p class="text-muted">Format lengkap untuk memulihkan data secara utuh ke sistem ini.</p>
+              <div class="flex gap-3">
+                <button id="btnCadangkanJson" class="btn btn-success">
+                  <i class="fa-solid fa-download"></i> Simpan Cadangan (.json)
+                </button>
+                <button id="btnPulihkanJson" class="btn btn-secondary">
+                  <i class="fa-solid fa-rotate-right"></i> Pulihkan dari File
+                </button>
+              </div>
+              <input type="file" id="filePulihkan" accept=".json" class="input-field input-light text-sm mt-2 hidden" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL DETAIL -->
+  <div id="modalDetail" class="fixed inset-0 bg-black/75 hidden items-center justify-center z-50 p-4">
+    <div class="bg-card border border-border rounded-xl shadow-float max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-5 border-b border-border flex justify-between items-center sticky top-0 bg-card">
+        <h3 class="font-bold text-lg">Detail Transaksi</h3>
+        <button id="tutupModal" class="text-muted hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="isiModal" class="p-5 text-sm"></div>
+      <div class="p-5 border-t border-border flex justify-end gap-3 sticky bottom-0 bg-card">
+        <button id="editDataBtn" class="btn btn-warning">
+          <i class="fa-solid fa-pen-to-square"></i> Ubah Data
+        </button>
+        <button id="tutupModalBtn" class="btn btn-secondary">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DATA GLOBAL
+    let database = JSON.parse(localStorage.getItem('dbSkriningPro') || '[]');
+    let nilaiStandar = JSON.parse(localStorage.getItem('nilaiStandar') || '{"TS":422,"MS":424,"BS":444,"PS":422}');
+    let editMode = null;
+    let editPermanen = false;
+    let grafikDM, grafikSkrining, grafikTotalKurang, miniGrafikDM;
+
+    const hariIni = new Date().toISOString().split('T')[0];
+    const pageConfig = {
+      beranda: { title: 'Beranda', desc: 'Ringkasan aktivitas sistem' },
+      transaksi: { title: 'Input Transaksi', desc: 'Masukkan data hasil pengujian' },
+      mingguan: { title: 'Data Mingguan', desc: 'Rekapitulasi per periode' },
+      analitik: { title: 'Analitik & Grafik', desc: 'Visualisasi tren data' },
+      arsip: { title: 'Arsip Lengkap', desc: 'Semua data transaksi' },
+      pengaturan: { title: 'Konfigurasi', desc: 'Nilai standar & info sistem' },
+      cadangan: { title: 'Cadangan Data', desc: 'Ekspor, impor & cadangkan data' }
+    };
+
+    // INISIALISASI
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('tanggal').value = hariIni;
+      updateWaktu(); setInterval(updateWaktu, 60000);
+      terapkanNilaiStandarKeForm();
+      updatePeriodeOptions();
+      generateKodeTrx();
+      renderDatabase();
+      renderMingguan();
+      updateStatistik();
+      initGrafik();
+      attachInputListeners();
+      hitungSemua();
+      setupNavigasi();
+      updateNilaiStandar();
+      setupExportImport();
+    });
+
+    function updateWaktu() {
+      document.getElementById('waktuSekarang').textContent = new Date().toLocaleString('id-ID', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    // NAVIGASI
+    function setupNavigasi() {
+      document.querySelectorAll('.sidebar-link, .go-page').forEach(link => {
+        link.addEventListener('click', e => {
+          e.preventDefault();
+          pindahHalaman(link.dataset.page);
+        });
+      });
+    }
+
+    function pindahHalaman(namaHalaman) {
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.classList.remove('active'); link.classList.add('inactive');
+        if (link.dataset.page === namaHalaman) {
+          link.classList.remove('inactive'); link.classList.add('active');
+        }
+      });
+      document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden-section'));
+      const halaman = document.getElementById(`page-${namaHalaman}`);
+      if (halaman) {
+        halaman.classList.remove('hidden-section');
+        halaman.classList.add('fade-in');
+      }
+      const cfg = pageConfig[namaHalaman];
+      document.getElementById('pageTitle').textContent = cfg.title;
+      document.getElementById('pageDesc').textContent = cfg.desc;
+      
+      if (namaHalaman === 'beranda') renderAktivitasTerbaru();
+      if (namaHalaman === 'analitik') setTimeout(updateGrafik, 100);
+      if (namaHalaman === 'pengaturan') updateNilaiStandar();
+      if (namaHalaman === 'arsip') renderDatabase(document.getElementById('searchInput').value);
+    }
+
+    // FUNGSI BANTU
+    function getMingguDariTanggal(tglStr) {
+      const tgl = new Date(tglStr);
+      const awalTahun = new Date(tgl.getFullYear(), 0, 1);
+      const hari = Math.floor((tgl - awalTahun) / (1000 * 60 * 60 * 24));
+      return `${tgl.getFullYear()}-W${String(Math.ceil((hari + 1) / 7)).padStart(2, '0')}`;
+    }
+
+    function updatePeriodeOptions() {
+      const periodeSet = new Set(database.map(d => d.periode));
+      periodeSet.add(getMingguDariTanggal(hariIni));
+      const periode = Array.from(periodeSet).sort().reverse();
+      
+      const sel1 = document.getElementById('periodeMinggu');
+      sel1.innerHTML = '<option value="">Pilih Periode</option>';
+      periode.forEach(p => sel1.innerHTML += `<option value="${p}">${p}</option>`);
+      sel1.value = getMingguDariTanggal(hariIni);
+      
+      const sel2 = document.getElementById('filterMingguan');
+      const existing = Array.from(sel2.options).map(o => o.value);
+      periode.forEach(p => {
+        if (!existing.includes(p)) sel2.innerHTML += `<option value="${p}">${p}</option>`;
+      });
+    }
+
+    function generateKodeTrx() {
+      const tgl = hariIni.replace(/-/g,'');
+      const urut = String(database.length + 1).padStart(4,'0');
+      document.getElementById('kodeTrx').textContent = `TRX-${tgl}-${urut}`;
+    }
+
+    function terapkanNilaiStandarKeForm() {
+      document.querySelector('[data-kategori="TS"] .val-permanen').value = nilaiStandar.TS;
+      document.querySelector('[data-kategori="MS"] .val-permanen').value = nilaiStandar.MS;
+      document.querySelector('[data-kategori="BS"] .val-permanen').value = nilaiStandar.BS;
+      document.querySelector('[data-kategori="PS"] .val-permanen').value = nilaiStandar.PS;
+    }
+
+    function attachInputListeners() {
+      ['dm1','dm2'].forEach(id => document.getElementById(id).addEventListener('input', hitungSemua));
+      document.querySelectorAll('.val-input, .val-permanen').forEach(el => el.addEventListener('input', () => {
+        hitungSemua();
+        if (editPermanen) simpanNilaiStandar();
+      }));
+    }
+
+    function hitungSemua() {
+      const dm1 = parseFloat(document.getElementById('dm1').value) || 0;
+      const dm2 = parseFloat(document.getElementById('dm2').value) || 0;
+      const dmPersen = dm1 ? ((dm2 - dm1)/dm1*100).toFixed(2) : '0.00';
+      document.getElementById('dmPersen').value = dmPersen + ' %';
+      const persenNum = parseFloat(dmPersen);
+      document.getElementById('dmStatus').textContent = (persenNum >= 0 ? '+' : '') + persenNum.toFixed(2) + '%';
+      document.getElementById('dmStatus').className = `text-xs px-2 py-1 rounded-full font-medium ${persenNum >= 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`;
+
+      const baris = document.querySelectorAll('#skriningBody tr[data-kategori]');
+      let totalSelisih = 0;
+      baris.forEach(bar => {
+        const input = parseFloat(bar.querySelector('.val-input').value) || 0;
+        const permanen = parseFloat(bar.querySelector('.val-permanen').value) || 0;
+        const selisih = input - permanen;
+        totalSelisih += selisih;
+        const el = bar.querySelector('.hasil-selisih');
+        el.textContent = (selisih >= 0 ? '+' : '') + selisih;
+        el.className = `py-3 px-3 text-center font-semibold hasil-selisih ${selisih >= 0 ? 'text-success' : 'text-danger'}`;
+      });
+      baris.forEach(bar => {
+        const selisih = parseFloat(bar.querySelector('.hasil-selisih').textContent) || 0;
+        bar.querySelector('.hasil-persen').textContent = (totalSelisih ? (selisih / totalSelisih * 100).toFixed(2) : '0.00') + ' %';
+      });
+      document.getElementById('totalSelisih').textContent = totalSelisih;
+    }
+
+    function simpanNilaiStandar() {
+      nilaiStandar = {
+        TS: parseInt(document.querySelector('[data-kategori="TS"] .val-permanen').value) || 0,
+        MS: parseInt(document.querySelector('[data-kategori="MS"] .val-permanen').value) || 0,
+        BS: parseInt(document.querySelector('[data-kategori="BS"] .val-permanen').value) || 0,
+        PS: parseInt(document.querySelector('[data-kategori="PS"] .val-permanen').value) || 0
+      };
+      localStorage.setItem('nilaiStandar', JSON.stringify(nilaiStandar));
+      updateNilaiStandar();
+    }
+
+    document.getElementById('toggleEditPermanen').addEventListener('click', () => {
+      editPermanen = !editPermanen;
+      document.querySelectorAll('.val-permanen').forEach(inp => {
+        inp.readOnly = !editPermanen;
+        inp.classList.toggle('input-dark', !editPermanen);
+        inp.classList.toggle('input-light', editPermanen);
+      });
+      if (!editPermanen) simpanNilaiStandar();
+    });
+
+    // FORM SIMPAN
+    document.getElementById('formTransaksi').addEventListener('submit', e => {
+      e.preventDefault();
+      const kodeTrx = editMode === null ? document.getElementById('kodeTrx').textContent : database[editMode].kodeTrx;
+      const tanggal = document.getElementById('tanggal').value;
+      const material = document.getElementById('material').value || 'Tanpa Nama';
+      const periode = document.getElementById('periodeMinggu').value || getMingguDariTanggal(tanggal);
+      const dm1 = parseFloat(document.getElementById('dm1').value) || 0;
+      const dm2 = parseFloat(document.getElementById('dm2').value) || 0;
+      const dmPersen = document.getElementById('dmPersen').value;
+
+      const getRow = k => {
+        const b = document.querySelector(`[data-kategori="${k}"]`);
+        return {
+          input: parseFloat(b.querySelector('.val-input').value) || 0,
+          permanen: parseFloat(b.querySelector('.val-permanen').value) || 0,
+          pengurangan: parseFloat(b.querySelector('.hasil-selisih').textContent) || 0,
+          persen: b.querySelector('.hasil-persen').textContent
+        };
+      };
+
+      const record = { 
+        kodeTrx, tanggal, periode, material, dm1, dm2, dmPersen,
+        ts: getRow('TS'), ms: getRow('MS'), bs: getRow('BS'), ps: getRow('PS'),
+        disimpanPada: new Date().toISOString()
+      };
+
+      if (editMode !== null) database[editMode] = record;
+      else database.push(record);
+      
+      simpanDatabase();
+      resetForm();
+      updatePeriodeOptions();
+      renderDatabase();
+      renderMingguan();
+      updateStatistik();
+      updateGrafik();
+      alert('✅ Data berhasil disimpan!');
+    });
+
+    function simpanDatabase() {
+      localStorage.setItem('dbSkriningPro', JSON.stringify(database));
+    }
+
+    document.getElementById('btnReset').addEventListener('click', resetForm);
+    function resetForm() {
+      editMode = null;
+      document.getElementById('tanggal').value = hariIni;
+      document.getElementById('material').value = '';
+      document.getElementById('periodeMinggu').value = getMingguDariTanggal(hariIni);
+      document.getElementById('dm1').value = '';
+      document.getElementById('dm2').value = '';
+      // Kembalikan nilai input ke sampel, standar tetap tersimpan
+      const sampel = {TS:427, MS:442, BS:473, PS:520};
+      ['TS','MS','BS','PS'].forEach(k => {
+        document.querySelector(`[data-kategori="${k}"] .val-input`).value = sampel[k];
+      });
+      terapkanNilaiStandarKeForm();
+      generateKodeTrx();
+      hitungSemua();
+    }
+
+    // STATISTIK
+    function updateStatistik() {
+      document.getElementById('statTotal').textContent = database.length;
+      const mingguIni = getMingguDariTanggal(hariIni);
+      const dataMingguIni = database.filter(d => d.periode === mingguIni);
+      document.getElementById('statMinggu').textContent = dataMingguIni.length;
+      
+      if (database.length) {
+        const avgDM = database.reduce((s,d) => s + parseFloat(d.dmPersen), 0) / database.length;
+        document.getElementById('statAvgDM').textContent = avgDM.toFixed(2) + '%';
+        const totalK = database.reduce((s,d) => s + d.ts.pengurangan + d.ms.pengurangan + d.bs.pengurangan + d.ps.pengurangan, 0);
+        document.getElementById('statTotalKurang').textContent = totalK;
+      } else {
+        document.getElementById('statAvgDM').textContent = '0%';
+        document.getElementById('statTotalKurang').textContent = '0';
+      }
+    }
+
+    function renderAktivitasTerbaru() {
+      const kontainer = document.getElementById('aktivitasTerbaru');
+      const terbaru = [...database].reverse().slice(0, 5);
+      if (!terbaru.length) {
+        kontainer.innerHTML = '<p class="text-muted text-center py-4">Belum ada data transaksi.</p>';
+        return;
+      }
+      kontainer.innerHTML = terbaru.map(d => `
+        <div class="flex justify-between items-center p-2.5 bg-cardhover/50 rounded-lg">
+          <div>
+            <p class="font-mono text-accent text-xs">${d.kodeTrx}</p>
+            <p class="text-muted text-xs mt-0.5">${d.material} · ${d.tanggal}</p>
+          </div>
+          <span class="text-sm font-semibold ${parseFloat(d.dmPersen) >= 0 ? 'text-success' : 'text-danger'}">${d.dmPersen}</span>
+        </div>`).join('');
+    }
+
+    // ARSIP
+    function renderDatabase(filter='') {
+      const tbody = document.getElementById('dbBody');
+      const hasil = database.filter(r => 
+        r.kodeTrx.toLowerCase().includes(filter.toLowerCase()) ||
+        r.material.toLowerCase().includes(filter.toLowerCase()) ||
+        r.periode.includes(filter)
+      );
+      tbody.innerHTML = '';
+      if (!hasil.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-muted">Tidak ada data yang cocok.</td></tr>';
+        return;
+      }
+      hasil.forEach((rec, idx) => {
+        const realIdx = database.indexOf(rec);
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-border/40 hover:bg-cardhover/50';
+        tr.innerHTML = `
+          <td class="py-3 px-3 font-mono text-accent">${rec.kodeTrx}</td>
+          <td class="py-3 px-3">${rec.tanggal}</td>
+          <td class="py-3 px-3 text-info">${rec.periode}</td>
+          <td class="py-3 px-3">${rec.material}</td>
+          <td class="py-3 px-3 text-center font-medium ${parseFloat(rec.dmPersen)>=0?'text-success':'text-danger'}">${rec.dmPersen}</td>
+          <td class="py-3 px-3 text-center whitespace-nowrap">
+            <button class="detail-btn text-accent hover:text-accentlight mr-2" data-i="${realIdx}" title="Lihat"><i class="fa-solid fa-eye"></i></button>
+            <button class="edit-btn text-warning hover:text-warning/80 mr-2" data-i="${realIdx}" title="Ubah"><i class="fa-solid fa-pen"></i></button>
+            <button class="hapus-btn text-danger hover:text-danger/80" data-i="${realIdx}" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+
+      document.querySelectorAll('.detail-btn').forEach(b => b.onclick = e => bukaModal(parseInt(e.currentTarget.dataset.i)));
+      document.querySelectorAll('.edit-btn').forEach(b => b.onclick = e => ubahData(parseInt(e.currentTarget.dataset.i)));
+      document.querySelectorAll('.hapus-btn').forEach(b => b.onclick = e => {
+        if (confirm('Hapus data ini? Tindakan tidak dapat dibatalkan.')) {
+          database.splice(parseInt(e.currentTarget.dataset.i), 1);
+          simpanDatabase();
+          renderDatabase(document.getElementById('searchInput').value);
+          renderMingguan();
+          updateStatistik();
+          updateGrafik();
+        }
+      });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', e => renderDatabase(e.target.value));
+
+    // MODAL
+    function bukaModal(idx) {
+      const d = database[idx];
+      document.getElementById('isiModal').innerHTML = `
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div><span class="text-muted">Kode</span><p class="font-mono text-accent">${d.kodeTrx}</p></div>
+            <div><span class="text-muted">Tanggal</span><p>${d.tanggal}</p></div>
+            <div><span class="text-muted">Periode</span><p class="text-info">${d.periode}</p></div>
+            <div><span class="text-muted">Material</span><p>${d.material}</p></div>
+          </div>
+          <hr class="border-border" />
+         
 
